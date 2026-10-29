@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light" style="color-scheme: light;"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>دليل الأماكن والتليفونات</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&amp;display=swap">
+<style>
+:root{--bg:#f3f1ec;--card:#fff;--ink:#1d2b2a;--mute:#6b7775;--line:#dcd9d1;--acc:#0f6b5c;--accink:#fff;--danger:#b3372f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121816;--card:#1b2420;--ink:#e8eeec;--mute:#93a29e;--line:#2e3a36;--acc:#3fb59f;--accink:#08201b;--danger:#ef7d74;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121816;--card:#1b2420;--ink:#e8eeec;--mute:#93a29e;--line:#2e3a36;--acc:#3fb59f;--accink:#08201b;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,sans-serif;line-height:1.6}
+main{max-width:560px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;font-weight:800;margin:4px 0 12px}
+input,button{font:inherit;color:inherit}
+input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin-bottom:8px}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button{cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:9px 14px}
+button.main{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600}
+button.del{color:var(--danger);border:0;background:none;padding:4px 8px}
+.place{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.place h2{font-size:1.1rem;margin:0 0 6px;font-weight:800}
+.row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.row .who{flex:1}
+.row small{color:var(--mute);display:block}
+a.btn{display:inline-block;text-decoration:none;background:var(--acc);color:var(--accink);padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap}
+a.map{display:inline-block;margin:2px 0 8px;color:var(--acc);font-weight:600}
+.num{direction:ltr;unicode-bidi:embed;display:inline-block}
+.form{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:6px}
+.ph{display:flex;width:100%;justify-content:space-between;align-items:center;border:0;background:none;font-weight:800;font-size:1.05rem;padding:4px 0;text-align:right}.ph .ar{color:var(--mute)}.place{padding:10px 14px;margin-bottom:8px}body.ro .form,body.ro [data-ep],body.ro [data-dl],body.ro [data-ex],body.ro [data-dp],body.ro .lb{display:none}textarea{width:100%;min-height:90px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:inherit;font:inherit;margin:8px 0}.pst{margin-top:10px}textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:8px 0;font:inherit;color:inherit}.pd{margin-top:10px}.pd summary{display:none}a.btn.wa{background:#1f8f4d;color:#fff}.set{margin:12px 0;color:var(--mute)}.set summary{cursor:pointer}.lb{display:inline-block;cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:9px 14px}#msg{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:12px;right:12px;background:var(--ink);color:var(--bg);border-radius:8px;text-align:center;z-index:5}#msg:empty{display:none}.note{background:var(--card);border:1px solid var(--acc);border-radius:10px;padding:10px;margin-bottom:10px}.top{display:flex;align-items:center;gap:6px;margin-bottom:4px}.top h2{flex:1;margin:0}button.sure{background:var(--danger);color:#fff;border-color:var(--danger)}.row button{padding:6px 10px}.empty{color:var(--mute);text-align:center;padding:24px 0}
+.tools{display:flex;gap:8px;margin-top:16px}
+</style>
+</head>
+<body class="ro">
+<main>
+<div id="bn" class="note" hidden="">بياناتك دلوقتي على جهازك بس. اضغط الزرار عشان تتحفظ جوه الرابط ويشوفها أي حد تبعتله اللينك.<br><button class="main" id="pub">حفظ البيانات في الرابط</button></div>
+<h1>دليل الأماكن والتليفونات</h1>
+<input id="q" placeholder="ابحث باسم المكان أو الشخص أو الرقم" aria-label="بحث">
+<div id="list"></div>
+<details class="set"><summary>⚙️ إعدادات النشر (للمسؤول بس)</summary>
+<div style="margin-top:8px"><input id="gr" dir="ltr" placeholder="اسم-المستخدم/اسم-الريبو"><input id="gt" dir="ltr" type="password" placeholder="GitHub token"><button class="main" id="gsave">حفظ الإعدادات</button> <button id="gout">خروج</button></div>
+</details>
+
+<details class="form" id="addBox" open="">
+<summary><b>＋ إضافة مكان جديد</b></summary>
+<div style="margin-top:10px">
+<input id="pn" placeholder="اسم المكان (مثال: مخزن رضا عطية - كفر الشيخ)">
+<input id="pl" placeholder="رابط اللوكيشن (من خرائط جوجل)" dir="ltr">
+<button class="main" id="addPlace">حفظ المكان</button>
+</div>
+</details>
+
+<div class="tools">
+<button id="copy">نسخ الكل كنص</button>
+</div>
+<p id="msg" class="empty" style="padding:8px 0"></p>
+</main>
+
+<input type="file" id="vcf" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none">
+<script id="seed" type="application/json">{"init": false, "data": [{"n": "مخزن الهدي / اجا", "l": "https://maps.app.goo.gl/gMCoVAuzwNDkcYJJ6", "p": [{"t": "01229369400", "w": "تاا", "r": "تا"}]}, {"n": "مخزن كابيتال /بيلا", "l": "https://maps.app.goo.gl/oPNHjNHRErp4RzpB9", "p": []}, {"n": "مخزن فابي/الاسماعيلية", "l": "https://maps.app.goo.gl/MneKJ1RCDcM7PnR5A?g_st=aw", "p": []}, {"n": "مخزن فارما اوفر دلتا / المحله الكبري", "l": "https://maps.app.goo.gl/L82UNKjtHvsxNo3L6", "p": []}, {"n": "مخزن رويال/ دمنهور", "l": "https://maps.app.goo.gl/gDZvpNBeWoVrKEZj6", "p": []}, {"n": "مخزن الامام / دكرنس", "l": "https://maps.app.goo.gl/Rs5pTrxH7e8tDDf3A?g_st=aw", "p": []}, {"n": "مخزن ازي فارم /الشهداء", "l": "https://maps.app.goo.gl/jHLBFRVJuRd9W5DK6?g_st=aw", "p": []}, {"n": "مخزن الشيخ /كوم حماده", "l": "https://maps.app.goo.gl/Lj51QbXfubcAN3DN8?g_st=aw", "p": []}, {"n": "هشام وفؤاد / طنطا", "l": "", "p": [{"t": "01006664523", "w": "ا .طارق", "r": "حسابات"}, {"t": "01061408210", "w": "ا . عبده ابراهيم", "r": ""}]}, {"n": "مخزن الأراوى / طنطا", "l": "", "p": [{"t": "01067115353", "w": "ا.محمد", "r": ""}, {"t": "01070814633", "w": "واتس اب", "r": ""}, {"t": "01012644130", "w": "ا . عادل", "r": "خزينه"}, {"t": "01100091471", "w": "ا . عماد", "r": ""}, {"t": "01009393669", "w": "مدير", "r": ""}]}, {"n": "مخزن هاجر وشروق / طنطا", "l": "", "p": [{"t": "01015155982", "w": "ا.محمد", "r": ""}, {"t": "01060683848", "w": "ا.محمد شحاته", "r": ""}]}, {"n": "مخزن الأندلس / طنطا", "l": "", "p": [{"t": "01004120220", "w": "د .يحيي احمد شبل", "r": ""}, {"t": "01000316273", "w": "ا . كمال", "r": "مشتريات"}, {"t": "01221895965", "w": "د . وليد", "r": ""}, {"t": "01021371486", "w": "د . وليد", "r": ""}, {"t": "01067785926", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الصفا / طنطا", "l": "", "p": [{"t": "01017555173", "w": "بدون اسم", "r": ""}, {"t": "01228752267", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن اكتف / طنطا", "l": "", "p": [{"t": "01002882757", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن البارون / طنطا", "l": "", "p": [{"t": "01096550334", "w": "باهر", "r": ""}, {"t": "01221313989", "w": "شاهين", "r": ""}, {"t": "01024775837", "w": "شاهين", "r": ""}, {"t": "01005586353", "w": "ا. الجيار", "r": ""}]}, {"n": "مخزن دار الدوا / طنطا", "l": "", "p": [{"t": "0403413994", "w": "بدون اسم", "r": ""}, {"t": "01275327126", "w": "د . اشرف شحاته", "r": ""}, {"t": "01124670291", "w": "بدون اسم", "r": ""}, {"t": "01100583693", "w": "د . عادل", "r": ""}]}, {"n": "مخزن الاصدقاء / طنطا", "l": "", "p": [{"t": "01288269442", "w": "ا .رشا", "r": ""}]}, {"n": "مخزن الفتح / طنطا", "l": "", "p": [{"t": "01284324213", "w": "ا . كريم", "r": ""}, {"t": "0403306222", "w": "ا . كريم", "r": ""}, {"t": "0403288757", "w": "ا . كريم", "r": ""}]}, {"n": "مخزن المدينه الطبيه / طنطا", "l": "", "p": [{"t": "01222606126", "w": "ا . اسلام", "r": ""}, {"t": "01128941622", "w": "ا. محمد حلمى", "r": ""}]}, {"n": "مخزن النور / طنطا", "l": "", "p": [{"t": "01022683504", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن النور 2 / طنطا", "l": "", "p": [{"t": "01019019113", "w": "بدون اسم", "r": ""}, {"t": "01067179055", "w": "بدون اسم", "r": ""}, {"t": "01022683504", "w": "بدون اسم", "r": ""}, {"t": "0403412057", "w": "بدون اسم", "r": ""}, {"t": "0403416665", "w": "بدون اسم", "r": ""}, {"t": "0403336918", "w": "بدون اسم", "r": ""}, {"t": "0403332277", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن جولدن / طنطا", "l": "", "p": [{"t": "01005382992", "w": "بدون اسم", "r": ""}, {"t": "01002223324", "w": "د . دياب", "r": ""}]}, {"n": "مخزن جولدن لايف (جمله) / طنطا", "l": "", "p": [{"t": "01222315315", "w": "رامى", "r": ""}]}, {"n": "مخزن حواس / طنطا", "l": "", "p": [{"t": "01284774257", "w": "بدون اسم", "r": ""}, {"t": "01220561266", "w": "ا. طارق", "r": ""}, {"t": "01143885144", "w": "ا . عمرو", "r": ""}, {"t": "01021042910", "w": "ا . خالد", "r": "تليسيلز"}, {"t": "01015155982", "w": "ا. محمد شحاته", "r": ""}, {"t": "01060683848", "w": "ا. محمد شحاته", "r": ""}, {"t": "01124584347", "w": "ا . ساره", "r": ""}]}, {"n": "مخزن الامل / طنطا", "l": "", "p": [{"t": "01227676793", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن لابوراكس / طنطا", "l": "", "p": [{"t": "01004535704", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الماسه / طنطا", "l": "", "p": [{"t": "01119929745", "w": "ا. عبد الرحمن", "r": ""}, {"t": "01021459208", "w": "ا. ايه", "r": ""}, {"t": "01211148572", "w": "ا . اسلام", "r": ""}, {"t": "01559949368", "w": "ا . اسلام", "r": ""}, {"t": "0403328462", "w": "ا . اسلام", "r": ""}, {"t": "01554527504", "w": "ا. محمد", "r": ""}]}, {"n": "مخزن النهضه / طنطا", "l": "", "p": [{"t": "01002321767", "w": "بدون اسم", "r": ""}, {"t": "0403573061", "w": "بدون اسم", "r": ""}, {"t": "01019899993", "w": "ا . عبد العزيز", "r": ""}]}, {"n": "مخزن نيو اكتف / طنطا", "l": "", "p": [{"t": "01009200362", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن نيو الصفوه / طنطا", "l": "", "p": [{"t": "01033002181", "w": "د. محمد عاطف", "r": ""}, {"t": "01211722761", "w": "د. محمد عاطف", "r": ""}, {"t": "01061605082", "w": "د. محمد عاطف", "r": ""}, {"t": "01007436477", "w": "ا . مصطفى", "r": ""}]}, {"n": "مخزن سمارت / طنطا", "l": "", "p": [{"t": "01066827538", "w": "ا . اسلام", "r": "مبيعات"}, {"t": "01064065336", "w": "ا . اسماعيل", "r": ""}]}, {"n": "مخزن الفايد / طنطا", "l": "", "p": [{"t": "01069025821", "w": "ا . خالد", "r": ""}]}, {"n": "مخزن الرحاب / كفر الزيات", "l": "", "p": [{"t": "01225264171", "w": "ا . طه", "r": ""}, {"t": "01552346283", "w": "بدون اسم", "r": ""}, {"t": "01201738681", "w": "بدون اسم", "r": ""}, {"t": "01009306898", "w": "بدون اسم", "r": ""}, {"t": "01024259050", "w": "ام حمزه", "r": ""}, {"t": "01020668240", "w": "ام حمزه", "r": ""}, {"t": "0402552200", "w": "ام حمزه", "r": ""}, {"t": "01005298156", "w": "ام حمزه", "r": ""}]}, {"n": "مخزن سيتى فارما / كفر الزيات", "l": "", "p": [{"t": "01221812787", "w": "ا . عباس", "r": ""}, {"t": "01551197455", "w": "ا . عباس", "r": ""}, {"t": "0402535700", "w": "ا . عباس", "r": ""}]}, {"n": "مخزن علاء عبد الرحمن / المحله", "l": "", "p": [{"t": "01226532057", "w": "بدون اسم", "r": ""}, {"t": "01284053846", "w": "ا . مصطفى", "r": ""}, {"t": "01099500225", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الدوليه / المحله", "l": "", "p": [{"t": "01558853513", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الفتح / المحله", "l": "", "p": [{"t": "01068144443", "w": "بدون اسم", "r": ""}, {"t": "01063910041", "w": "ا . دينا", "r": ""}, {"t": "01008304797", "w": "ا . دينا", "r": ""}, {"t": "0402258277", "w": "بدون اسم", "r": ""}, {"t": "01097967573", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الهاشم / المحله", "l": "", "p": [{"t": "01024633899", "w": "بدون اسم", "r": ""}, {"t": "01221989260", "w": "بدون اسم", "r": ""}, {"t": "01067405010", "w": "بدون اسم", "r": ""}, {"t": "01200449100", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن المعداوى / المحله", "l": "", "p": [{"t": "01065693994", "w": "بدون اسم", "r": ""}, {"t": "01063339388", "w": "ا . وائل", "r": ""}, {"t": "01006522673", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الرؤى والنور / المحله", "l": "", "p": [{"t": "01557707623", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن اتحاد الصيادله / المحله", "l": "", "p": [{"t": "01110559004", "w": "بدون اسم", "r": ""}, {"t": "01099645055", "w": "ا . اسلام", "r": ""}]}, {"n": "مخزن الحياه / المحله", "l": "", "p": [{"t": "01009171715", "w": "ا . بلال", "r": ""}, {"t": "01064186447", "w": "ا .كريم", "r": ""}, {"t": "01000223912", "w": "بدون اسم", "r": ""}, {"t": "01015002559", "w": "ا . الشرقاوى", "r": ""}, {"t": "01114210177", "w": "ا . يحيي", "r": ""}]}, {"n": "مخزن خليل / المحله", "l": "", "p": [{"t": "01015806120", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن مها / المحله", "l": "", "p": [{"t": "01110301115", "w": "بدون اسم", "r": ""}, {"t": "01118430992", "w": "ا . محمد شاكر", "r": ""}, {"t": "01553735424", "w": "ا. مريم", "r": ""}]}, {"n": "مخزن السلطان / المحله", "l": "", "p": [{"t": "01067405723", "w": "ا . عمرو", "r": ""}, {"t": "0402086719", "w": "ا . عمرو", "r": ""}, {"t": "01550320877", "w": "ا . منار", "r": ""}]}, {"n": "مخزن فارما اوفر دلتا / المحله", "l": "", "p": [{"t": "01225101716", "w": "ا . وليد", "r": ""}, {"t": "01005157612", "w": "بدون اسم", "r": ""}, {"t": "01224401269", "w": "ا . ياسر", "r": ""}, {"t": "0402388448", "w": "ا . ياسر", "r": ""}]}, {"n": "مخزن دواء / بسيون", "l": "", "p": [{"t": "01095393775", "w": "ا. سعد", "r": ""}]}, {"n": "مخزن الفا / قطور", "l": "", "p": [{"t": "01014403520", "w": "بدون اسم", "r": ""}, {"t": "01002289033", "w": "بدون اسم", "r": ""}, {"t": "01015424639", "w": "بدون اسم", "r": "خزينه"}, {"t": "01064222831", "w": "ا. عبد الحميد", "r": ""}, {"t": "01092060836", "w": "بدون اسم", "r": ""}, {"t": "01064176755", "w": "ا. حازم", "r": ""}]}, {"n": "مخزن كير / قطور", "l": "", "p": [{"t": "01018207702", "w": "ا. نوفل", "r": ""}]}, {"n": "مخزن الهمشرى / قطور", "l": "", "p": [{"t": "01010900753", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الحياه / قطور", "l": "", "p": [{"t": "01010260226", "w": "بدون اسم", "r": ""}, {"t": "01068245302", "w": "ا. م عبد اللطيف", "r": ""}, {"t": "0402763838", "w": "ا. م عبد اللطيف", "r": ""}, {"t": "01050796080", "w": "ا . مصطفى", "r": ""}]}, {"n": "مخزن قطور / قطور", "l": "", "p": [{"t": "01017104355", "w": "ا. عبدالله", "r": ""}, {"t": "01090977743", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن فارما كير / قطور", "l": "", "p": [{"t": "01021315191", "w": "ا . م مجدى", "r": ""}, {"t": "01551315515", "w": "ا . م مجدى", "r": ""}, {"t": "01002568563", "w": "ا . م مجدى", "r": ""}, {"t": "01033861667", "w": "ا . معتز", "r": ""}]}, {"n": "مخزن الفاروق / السنطه", "l": "", "p": [{"t": "01206575891", "w": "بدون اسم", "r": ""}, {"t": "01026720541", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن نسيم / زفتى", "l": "", "p": [{"t": "01023814000", "w": "ا . م وحيد", "r": ""}, {"t": "01006940273", "w": "ا . مازن", "r": ""}]}, {"n": "مخزن النيل / زفتى", "l": "", "p": [{"t": "01094420965", "w": "د . عبدالله", "r": ""}, {"t": "0404706022", "w": "د . عبدالله", "r": ""}]}, {"n": "مخزن التوأمان / شبين الكوم", "l": "", "p": [{"t": "01069551836", "w": "ا. على", "r": ""}, {"t": "01015402650", "w": "بدون اسم", "r": ""}, {"t": "01017364378", "w": "د . عبد الرؤوف", "r": ""}, {"t": "01026468618", "w": "ا . حسن", "r": ""}, {"t": "01094905669", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الشمس / شبين الكوم", "l": "", "p": [{"t": "01012116053", "w": "ا. عبد العزيز", "r": ""}, {"t": "01062858638", "w": "ا . عمرو", "r": ""}, {"t": "01064596751", "w": "ا . احمد", "r": ""}]}, {"n": "مخزن السلام / شبين الكوم", "l": "", "p": [{"t": "01005410557", "w": "ا . عمرو", "r": ""}, {"t": "01012185550", "w": "ا . محمد الشيخ", "r": ""}, {"t": "01018601095", "w": "بدون اسم", "r": "مشتريات"}, {"t": "01016555567", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن اكتف / شبين الكوم", "l": "", "p": [{"t": "01029379312", "w": "بدون اسم", "r": ""}, {"t": "01024216966", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن اليوسف / شبين الكوم", "l": "", "p": [{"t": "01091054888", "w": "ا . محمد غالى", "r": ""}]}, {"n": "مخزن جى زد / شبين الكوم", "l": "", "p": [{"t": "01282619049", "w": "ا . وليد", "r": ""}]}, {"n": "مخزن بدر / شبين الكوم", "l": "", "p": [{"t": "01278441020", "w": "ا . الهام", "r": ""}, {"t": "01066549595", "w": "ا . على", "r": ""}, {"t": "01010683080", "w": "ا . على", "r": ""}, {"t": "01006129211", "w": "د . زينب", "r": ""}, {"t": "01015046132", "w": "ا . عزت", "r": "مبيعات"}, {"t": "01069149318", "w": "ا . وليد", "r": ""}]}, {"n": "مخزن الوطنيه / شبين الكوم", "l": "", "p": [{"t": "01000091348", "w": "ا . غاده", "r": "مشتريات"}]}, {"n": "مخزن تاج / شبين الكوم", "l": "", "p": [{"t": "01022380106", "w": "بدون اسم", "r": ""}, {"t": "01150947503", "w": "بدون اسم", "r": ""}, {"t": "01003554866", "w": "بدون اسم", "r": ""}, {"t": "01027122444", "w": "بدون اسم", "r": ""}, {"t": "01011951297", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن زيدان / شبين الكوم", "l": "", "p": [{"t": "01558889977", "w": "بدون اسم", "r": ""}, {"t": "01006596620", "w": "بدون اسم", "r": ""}, {"t": "01024789608", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن المنوفيه / شبين الكوم", "l": "", "p": [{"t": "01064276236", "w": "ا . احمد السيد", "r": ""}]}, {"n": "مخزن بيرو \\يونايتد / شبين الكوم", "l": "", "p": [{"t": "01022455653", "w": "بدون اسم", "r": ""}, {"t": "01098345783", "w": "ا . ولاء", "r": ""}, {"t": "01019639933", "w": "د . احمد شعلان", "r": ""}]}, {"n": "مخزن سيتى فارما / شبين الكوم", "l": "", "p": [{"t": "01009404004", "w": "ا . كريم", "r": ""}]}, {"n": "مخزن الامل / شبين الكوم", "l": "", "p": [{"t": "01094308770", "w": "بدون اسم", "r": ""}, {"t": "01094437448", "w": "ا . اسر", "r": ""}, {"t": "01014324124", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن البدرى / شبين الكوم", "l": "", "p": [{"t": "01006499702", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن ابن خلدون / شبين الكوم", "l": "", "p": [{"t": "01008817022", "w": "ا . عصام", "r": ""}, {"t": "01004620932", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن النهضه / شبين الكوم", "l": "", "p": [{"t": "01097369279", "w": "بدون اسم", "r": ""}, {"t": "01551261239", "w": "بدون اسم", "r": ""}, {"t": "01008339109", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن كيان / منوف", "l": "", "p": [{"t": "01000263115", "w": "ا . ابراهيم \\ د . شريف", "r": ""}]}, {"n": "مخزن كيان2 / منوف", "l": "", "p": [{"t": "01228546041", "w": "ا . محمد", "r": ""}, {"t": "01004885446", "w": "د . محمود يحيي", "r": ""}]}, {"n": "رشه جريئه / الشهداء", "l": "", "p": [{"t": "01012022762", "w": "ا . محمود", "r": ""}]}, {"n": "مخزن فارما / الشهداء", "l": "", "p": [{"t": "01020502655", "w": "ا . اميره", "r": ""}]}, {"n": "عمران ستور / الشهداء", "l": "", "p": [{"t": "01060906751", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن ثرى ام / اشمون", "l": "", "p": [{"t": "01014446400", "w": "ا . محمد", "r": ""}]}, {"n": "مخزن المؤسسين / اشمون", "l": "", "p": [{"t": "01229019524", "w": "ا . محمود", "r": ""}]}, {"n": "مخزن السلام / الباجور", "l": "", "p": [{"t": "01099787363", "w": "ا . محمد", "r": ""}, {"t": "01090842207", "w": "بدون اسم", "r": "مشتريات"}, {"t": "0483895860", "w": "بدون اسم", "r": "مشتريات"}, {"t": "0483892605", "w": "بدون اسم", "r": "مشتريات"}]}, {"n": "مخزن الرضا / بركه السبع", "l": "", "p": [{"t": "01122083609", "w": "ا . امنيه", "r": ""}]}, {"n": "مخزن عامر / بركه السبع", "l": "", "p": [{"t": "01093745800", "w": "ا . احمد جمال", "r": ""}]}, {"n": "مخزن القدس / قويسنا", "l": "", "p": [{"t": "01093119191", "w": "ا . اسامه حسن", "r": ""}, {"t": "01006499702", "w": "ا . محمد", "r": ""}]}, {"n": "مخزن AM جروب / كفر الشيخ", "l": "", "p": [{"t": "01017111148", "w": "بدون اسم", "r": ""}, {"t": "01119173262", "w": "ا . اسلام", "r": ""}, {"t": "01014859993", "w": "الاونر . زيدان", "r": ""}]}, {"n": "مخزن دار الدواء2 / كفر الشيخ", "l": "", "p": [{"t": "01096916247", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن دواء مصر / كفر الشيخ", "l": "", "p": [{"t": "01062628372", "w": "ا . م البرهامى", "r": ""}]}, {"n": "مخزن الفتح / كفر الشيخ", "l": "", "p": [{"t": "01093382970", "w": "د . احمد", "r": ""}, {"t": "01022340518", "w": "ا . احمد", "r": ""}]}, {"n": "مخزن الشفاء / كفر الشيخ", "l": "", "p": [{"t": "01093954455", "w": "ا . عبد ربه", "r": ""}, {"t": "01096164741", "w": "ا . ا حمد فايز", "r": ""}, {"t": "01003910776", "w": "ا . مصطفى", "r": ""}]}, {"n": "مخزن الشفاء", "l": "", "p": [{"t": "01022886208", "w": "ا . محمود جابر", "r": ""}]}, {"n": "مخزن مطاوع / كفر الشيخ", "l": "", "p": [{"t": "01151663656", "w": "ا . نوال", "r": ""}, {"t": "01062629430", "w": "ا . ابانوب", "r": ""}, {"t": "01090909132", "w": "ا . ابانوب", "r": ""}, {"t": "0473162988", "w": "ا . ابانوب", "r": ""}]}, {"n": "مخزن فارما مول / كفر الشيخ", "l": "", "p": [{"t": "01000218171", "w": "ا . علاء عبد الخالق", "r": ""}]}, {"n": "مخزن سكاى / كفر الشيخ", "l": "", "p": [{"t": "01014326308", "w": "ا . عطيه", "r": ""}, {"t": "01009154856", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن تداوى / كفر الشيخ", "l": "", "p": [{"t": "01069023008", "w": "بدون اسم", "r": ""}, {"t": "01099092192", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن طيبه / كفر الشيخ", "l": "", "p": [{"t": "01068735907", "w": "بدون اسم", "r": ""}, {"t": "01093674963", "w": "د . مها", "r": ""}]}, {"n": "مخزن يونايتد / كفر الشيخ", "l": "", "p": [{"t": "01050553202", "w": "بدون اسم", "r": ""}, {"t": "01067640642", "w": "ا . نها", "r": ""}]}, {"n": "مخزن رضا عطيه / كفر الشيخ", "l": "", "p": [{"t": "01009154856", "w": "ا . محمود رضا", "r": ""}]}, {"n": "مخزن نيو سيتى / كفر الشيخ", "l": "", "p": [{"t": "01026580118", "w": "بدون اسم", "r": ""}]}, {"n": "مخزن الاندلسيه / كفر الشيخ", "l": "", "p": [{"t": "01066909329", "w": "ا . هبه", "r": ""}]}, {"n": "مخزن الرياض / الرياض", "l": "", "p": [{"t": "01200547897", "w": "بدون اسم", "r": ""}, {"t": "01009205331", "w": "ا . هشام", "r": ""}]}, {"n": "مخزن عوض / الحامول", "l": "", "p": [{"t": "01092203006", "w": "بدون اسم", "r": "حسابات"}]}, {"n": "مخزن فارما تريد / مطوبس", "l": "", "p": [{"t": "01144823066", "w": "د . احمد", "r": ""}]}, {"n": "مخزن اشرف / مطوبس", "l": "", "p": [{"t": "01093301402", "w": "د . اشرف", "r": ""}, {"t": "01093440541", "w": "ا . سعد", "r": ""}]}, {"n": "مخزن يونس / مطوبس", "l": "", "p": [{"t": "01013766193", "w": "ا . هدى", "r": ""}]}, {"n": "مخزن حمدى لمونه / دسوق", "l": "", "p": [{"t": "01010388112", "w": "ا . سامح", "r": ""}]}]}</script>
+<script>
+var KEY="places-standalone-v1";
+var data=[];
+var seed=[{n:"مخزن رضا عطية - كفر الشيخ",l:"https://maps.app.goo.gl/jHLBFRVJuRd9W5DK6?g_st=aw",p:[{t:"0123456",w:"إبراهيم",r:"مشتريات"},{t:"245789",w:"محمد",r:"حسابات"},{t:"769875",w:"سعيد",r:"إدارة"}]}];
+var S,art=null;
+try{S=JSON.parse(document.getElementById("seed").textContent)}catch(e){S={init:true,data:seed}}
+data=S.data;
+var GH={repo:"",token:""};
+try{GH.token=localStorage.getItem("gh-token")||"";GH.repo=localStorage.getItem("gh-repo")||""}catch(e){}
+if(!GH.repo){var hn=location.hostname,p1=location.pathname.split("/").filter(Boolean)[0];if(/\.github\.io$/.test(hn))GH.repo=hn.split(".")[0]+"/"+((p1&&p1.indexOf(".")<0)?p1:hn)}
+function ghUrl(){return"https://api.github.com/repos/"+GH.repo+"/contents/data.json"}
+var etag="";
+function loadRemote(){
+ if(!GH.repo||saving||again||ed!==null||document.hidden)return;
+ var hd={Accept:"application/vnd.github.raw+json"};if(etag)hd["If-None-Match"]=etag;
+ fetch(ghUrl(),{headers:hd,cache:"no-store"}).then(function(r){
+  if(r.status===304||!r.ok)return null;
+  etag=r.headers.get("ETag")||"";return r.json()
+ }).then(function(j){if(j&&j.data&&!saving&&!again&&ed===null&&JSON.stringify(j.data)!==JSON.stringify(data)){data=j.data;render()}}).catch(function(){})}
+var saving=false,again=false;
+async function flush(){
+ saving=true;
+ try{
+  while(again){
+   again=false;
+   var hd={Authorization:"Bearer "+GH.token,Accept:"application/vnd.github+json"};
+   var r=await fetch(ghUrl(),{headers:hd,cache:"no-store"});
+   var sha=r.ok?(await r.json()).sha:undefined;
+   var b64=btoa(unescape(encodeURIComponent(JSON.stringify({data:data},null,1))));
+   var pr=await fetch(ghUrl(),{method:"PUT",headers:hd,body:JSON.stringify({message:"update data",content:b64,sha:sha})});
+   if(!pr.ok)throw new Error(pr.status);
+  }
+  etag="";say("اتحفظ على GitHub ✓");
+ }catch(e){say("تعذر الحفظ على GitHub ("+e.message+")")}
+ saving=false;
+}
+function save(){try{location.hash=cur===null?"":"p-"+cur}catch(e){}persist()}
+function persist(){if(!GH.token||!GH.repo){say("ادخل التوكن من ⚙️ الأول");return}again=true;if(!saving)flush()}
+function say(t){document.getElementById("msg").textContent=t;setTimeout(function(){document.getElementById("msg").textContent=""},2500)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function waNum(t){var d=String(t).replace(/\D/g,"");if(/^01\d{9}$/.test(d))return"20"+d.slice(1);if(/^201\d{9}$/.test(d))return d;return""}
+function safeUrl(u){return /^https?:\/\//i.test(u)?u:""}
+var ed=null,cf=null,cur=null;
+function ask(k){cf=k;render();setTimeout(function(){if(cf===k){cf=null;render()}},4000)}
+function render(){
+ var q=document.getElementById("q").value.trim().toLowerCase();
+ var h="";
+ data.forEach(function(pl,i){
+  var hit=!q||pl.n.toLowerCase().indexOf(q)>-1||pl.p.some(function(x){return(x.t+x.w+x.r).toLowerCase().indexOf(q)>-1});
+  if(!hit)return;
+  h+='<section class="place"><button class="ph" data-tg="'+i+'" aria-expanded="'+(cur===i)+'"><span>'+esc(pl.n)+'</span><span class="ar">'+(cur===i?'▴':'▾')+'</span></button>';
+  if(cur!==i){h+='</section>';return}
+  if(ed==="p"+i){
+   h+='<input id="en" value="'+esc(pl.n)+'" placeholder="اسم المكان"><input id="el" dir="ltr" value="'+esc(pl.l||"")+'" placeholder="رابط اللوكيشن"><button class="main" data-sp="'+i+'">حفظ</button> <button data-ca="1">إلغاء</button>';
+  }else{
+   h+='<div class="top"><div style="flex:1"></div><button data-ep="'+i+'" aria-label="تعديل">✏️</button><button class="del'+(cf==="p"+i?" sure":"")+'" data-dl="'+i+'">'+(cf==="p"+i?"تأكيد الحذف؟":"🗑️")+'</button></div>';
+  }
+  var u=safeUrl(pl.l);
+  if(u&&ed!=="p"+i)h+='<a class="map" href="'+esc(u)+'" target="_blank" rel="noopener">📍 افتح اللوكيشن</a>';
+  pl.p.forEach(function(x,j){
+   var k=i+"_"+j;
+   if(ed==="x"+k){
+    h+='<div class="row" style="display:block"><input id="ew" value="'+esc(x.w)+'" placeholder="الاسم"><input id="er" value="'+esc(x.r)+'" placeholder="الوظيفة / القسم"><input id="et" dir="ltr" inputmode="tel" value="'+esc(x.t)+'" placeholder="رقم التليفون"><button class="main" data-sx="'+k+'">حفظ</button> <button data-ca="1">إلغاء</button></div>';
+   }else{
+    h+='<div class="row"><div class="who"><b>'+esc(x.w)+'</b> '+esc(x.r)+'<small class="num">'+esc(x.t)+'</small></div>'+
+    '<a class="btn" href="tel:'+esc(x.t.replace(/[^\d+]/g,""))+'">اتصال</a>'+(waNum(x.t)?'<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/'+waNum(x.t)+'">واتساب</a>':"")+
+    '<button data-ex="'+k+'" aria-label="تعديل">✏️</button><button class="del'+(cf==="x"+k?" sure":"")+'" data-dp="'+k+'">'+(cf==="x"+k?"تأكيد؟":"🗑️")+'</button></div>';
+   }
+  });
+  h+='<div class="form"><input placeholder="الاسم" id="w'+i+'"><input placeholder="الوظيفة / القسم" id="r'+i+'"><input placeholder="رقم التليفون" id="t'+i+'" inputmode="tel" dir="ltr"><button class="main" data-ap="'+i+'">إضافة رقم</button> <button data-imp="'+i+'">استيراد من جهات الاتصال</button><details class="pd"><summary><b>لصق أسماء وأرقام</b></summary><textarea id="ta'+i+'" rows="6" placeholder="سطر لكل شخص، مثال:\nإبراهيم 01012345678"></textarea><button class="main" data-pi="'+i+'">استيراد</button></details></div></section>';
+ });
+ document.getElementById("list").innerHTML=h||'<div class="empty">مفيش أماكن لسه. ضيف أول مكان من تحت.</div>';
+}
+document.addEventListener("click",function(e){
+ var ca=e.target.closest("a[data-call]");
+ if(ca){var nm=ca.dataset.call;try{navigator.clipboard.writeText(nm)}catch(er){}say("الرقم "+nm+" (اتنسخ). لو الاتصال ما فتحش الصقه في تطبيق الاتصال")}
+ var lb=e.target.closest("label[data-impf]");if(lb){impTo=+lb.dataset.impf;return}
+ var b=e.target.closest("button");if(!b)return;
+ var d=b.dataset;
+ if(b.id==="gsave"){var rp=document.getElementById("gr").value.trim(),tk=document.getElementById("gt").value.trim();if(!rp||!tk){say("اكتب الريبو والتوكن");return}GH.repo=rp;GH.token=tk;try{localStorage.setItem("gh-repo",rp);localStorage.setItem("gh-token",tk)}catch(er){}document.body.classList.remove("ro");document.getElementById("gt").value="";say("تم. أي تعديل هيتنشر على GitHub");render();return}
+ if(b.id==="gout"){GH.token="";try{localStorage.removeItem("gh-token")}catch(er){}document.body.classList.add("ro");say("تم الخروج");render();return}
+ if(b.id==="pub"){persist();return}
+ if(d.pst!==undefined){impTo=+d.pst;var out=[];document.getElementById("pt"+d.pst).value.split(/\r?\n/).forEach(function(ln){var m=/\+?\d[\d\s\-]{4,}\d/.exec(ln);if(!m)return;out.push({w:ln.replace(m[0],"").replace(/[:\-,،;|]+/g," ").trim(),t:m[0].trim()})});addC(out);return}
+ if(d.imp!==undefined){impTo=+d.imp;say("جاري فتح جهات الاتصال...");
+  if(navigator.contacts&&navigator.contacts.select){navigator.contacts.select(["name","tel"],{multiple:true}).then(function(r){var l=[];r.forEach(function(c){(c.tel||[]).forEach(function(t){l.push({w:(c.name||[])[0],t:t})})});addC(l)}).catch(function(e){say("مش قادر أفتح جهات الاتصال. افتح الصفحة من Chrome، أو الصق الأسماء في المربع اللي اتفتح");var dd=b.parentNode.querySelector("details.pd");if(dd)dd.open=true})}
+  else say("المتصفح ده مش بيدعم جهات الاتصال، افتح الصفحة من Chrome");return}
+ if(d.pi!==undefined){impTo=+d.pi;var tx=document.getElementById("ta"+d.pi).value,out=[];
+  if(/BEGIN:VCARD/i.test(tx)){tx.split(/BEGIN:VCARD/i).slice(1).forEach(function(blk){var m=/^FN[^:\r\n]*:(.*)$/im.exec(blk);var nm=m?m[1].trim():"";var re=/^(?:item\d+\.)?TEL[^:\r\n]*:(.+)$/gim,t;while((t=re.exec(blk)))out.push({w:nm,t:t[1].trim()})})}
+  else tx.split(/\r?\n/).forEach(function(ln){var m=/\+?\d[\d\s\-]{4,}\d/.exec(ln);if(m)out.push({t:m[0].trim(),w:ln.replace(m[0],"").replace(/[:,\-|]+/g," ").trim()})});
+  addC(out);return}
+ if(b.id==="addPlace"){
+  var n=document.getElementById("pn").value.trim(),l=document.getElementById("pl").value.trim();
+  if(!n){say("اكتب اسم المكان");return}
+  data.unshift({n:n,l:l,p:[]});cur=0;ed=null;save();
+  document.getElementById("pn").value="";document.getElementById("pl").value="";
+  document.getElementById("addBox").open=false;render();return}
+ if(d.ap!==undefined){
+  var i=d.ap,t=document.getElementById("t"+i).value.trim();
+  if(!t){say("اكتب رقم التليفون");return}
+  data[i].p.push({t:t,w:document.getElementById("w"+i).value.trim()||"بدون اسم",r:document.getElementById("r"+i).value.trim()});
+  save();render();return}
+ if(d.tg!==undefined){cur=(cur===+d.tg)?null:+d.tg;ed=null;cf=null;render();return}
+ if(d.ep!==undefined){ed="p"+d.ep;cf=null;render();return}
+ if(d.ex){ed="x"+d.ex;cf=null;render();return}
+ if(d.ca){ed=null;render();return}
+ if(d.sp!==undefined){
+  var nn=document.getElementById("en").value.trim();
+  if(!nn){say("اكتب اسم المكان");return}
+  data[d.sp].n=nn;data[d.sp].l=document.getElementById("el").value.trim();
+  ed=null;save();render();say("تم الحفظ");return}
+ if(d.sx){
+  var a=d.sx.split("_"),tt=document.getElementById("et").value.trim();
+  if(!tt){say("اكتب رقم التليفون");return}
+  data[a[0]].p[a[1]]={t:tt,w:document.getElementById("ew").value.trim()||"بدون اسم",r:document.getElementById("er").value.trim()};
+  ed=null;save();render();say("تم الحفظ");return}
+ if(d.dl!==undefined){
+  if(cf==="p"+d.dl){data.splice(d.dl,1);cf=null;cur=null;save();render()}else ask("p"+d.dl);return}
+ if(d.dp){
+  if(cf==="x"+d.dp){var c=d.dp.split("_");data[c[0]].p.splice(c[1],1);cf=null;save();render()}else ask("x"+d.dp);return}
+ if(b.id==="copy"){
+  var txt=data.map(function(pl){return pl.n+"\n"+pl.p.map(function(x){return x.t+" "+x.w+" "+x.r}).join("\n")+(pl.l?"\n"+pl.l:"")}).join("\n\n");
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){say("تم النسخ")},function(){say("تعذر النسخ")})}else say("النسخ مش متاح هنا");
+ }
+});
+document.getElementById("q").addEventListener("input",render);
+var impTo=null;
+function addC(list){var pl=data[impTo];if(!pl)return;var n=0;list.forEach(function(c){var t=(c.t||"").trim();if(!t)return;var dg=t.replace(/\D/g,"");if(pl.p.some(function(x){return x.t.replace(/\D/g,"")===dg}))return;pl.p.push({t:t,w:(c.w||"").trim()||"بدون اسم",r:""});n++});if(n){save();render();say("تم استيراد "+n+" رقم")}else say("مفيش أرقام جديدة للاستيراد")}
+document.getElementById("vcf").addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var out=[];String(rd.result).split(/BEGIN:VCARD/i).slice(1).forEach(function(blk){var m=/^FN[^:\r\n]*:(.*)$/im.exec(blk);var nm=m?m[1].trim():"";var re=/^(?:item\d+\.)?TEL[^:\r\n]*:(.+)$/gim,t;while((t=re.exec(blk)))out.push({w:nm,t:t[1].trim()})});addC(out);e.target.value=""};rd.readAsText(f)});
+var hm=/^#p-(\d+)$/.exec(location.hash||"");if(hm&&data[hm[1]])cur=+hm[1];
+render();
+document.getElementById("gr").value=GH.repo;
+if(GH.token&&GH.repo)document.body.classList.remove("ro");
+loadRemote();setInterval(loadRemote,10000);document.addEventListener("visibilitychange",function(){if(!document.hidden){etag="";loadRemote()}});
+
+</script>
+
+
+</body></html>
