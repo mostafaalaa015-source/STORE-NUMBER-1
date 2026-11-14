@@ -70,39 +70,70 @@ var S,art=null;
 try{S=JSON.parse(document.getElementById("seed").textContent)}catch(e){S={init:true,data:seed}}
 data=S.data;
 var GH={repo:"",token:""};
-try{GH.token=localStorage.getItem("gh-token")||"";GH.repo=localStorage.getItem("gh-repo")||""}catch(e){}
+function ls(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lset(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+GH.token=ls("gh-token")||"";GH.repo=ls("gh-repo")||"";
 if(!GH.repo){var hn=location.hostname,p1=location.pathname.split("/").filter(Boolean)[0];if(/\.github\.io$/.test(hn))GH.repo=hn.split(".")[0]+"/"+((p1&&p1.indexOf(".")<0)?p1:hn)}
+var baseSha="",dirty=false,saving=false,again=false,etag="";
+try{var cc=JSON.parse(ls("gh-cache")||"null");if(cc&&cc.data&&cc.repo===GH.repo){data=cc.data;baseSha=cc.sha||"";dirty=!!cc.dirty}}catch(e){}
+function cacheSave(){lset("gh-cache",JSON.stringify({repo:GH.repo,data:data,sha:baseSha,dirty:dirty,ts:Date.now()}))}
+function stt(m){var e=document.getElementById("st");if(e)e.textContent=m}
+function tm(){return new Date().toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit"})}
 function ghUrl(){return"https://api.github.com/repos/"+GH.repo+"/contents/data.json"}
-var etag="";
-function stt(ok,c){var e=document.getElementById("st");if(!e)return;
- if(ok)e.textContent="● متصل بـ GitHub — آخر فحص "+new Date().toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit"});
- else e.textContent=c===404?"⚠ مش لاقي الداتا على GitHub (الريبو لازم يكون Public وفيه data.json). اللي قدامك ممكن يكون قديم":c==="offline"?"⚠ مفيش اتصال. اللي قدامك ممكن يكون قديم":"⚠ تعذر تحديث الداتا (كود "+c+"). اللي قدامك ممكن يكون قديم"}
+function authH(){return{Authorization:"Bearer "+GH.token,Accept:"application/vnd.github+json"}}
+function dec(b){return JSON.parse(decodeURIComponent(escape(atob(String(b).replace(/\s/g,"")))))}
+function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o,null,1))))}
+function busy(){return saving||again||dirty||ed!==null}
+function unlock(){if(GH.token&&GH.repo&&baseSha)document.body.classList.remove("ro")}
+function apply(arr,sha){if(JSON.stringify(arr)!==JSON.stringify(data)){data=arr;render()}if(sha)baseSha=sha;cacheSave();unlock()}
+function fail(c){stt("⚠ تعذر تحديث الداتا"+(c==="offline"?" (مفيش اتصال)":" (كود "+c+")")+" — المعروض آخر نسخة محفوظة، وبياناتك ما اتمسحتش"+(dirty?" (وفيه تعديلات لسه مارفعتش، محفوظة على جهازك)":""))}
+function mergeData(rem,loc){
+ var nm=function(x){return String(x).replace(/[\s\/\-_.]+/g,"")};
+ var out=JSON.parse(JSON.stringify(rem)),ix={};out.forEach(function(p){ix[nm(p.n)]=p});
+ loc.forEach(function(p){var q=ix[nm(p.n)];
+  if(!q){q=JSON.parse(JSON.stringify(p));out.push(q);ix[nm(p.n)]=q;return}
+  if(!q.l&&p.l)q.l=p.l;if(!q.a&&p.a)q.a=p.a;
+  var have={};q.p.forEach(function(x){have[String(x.t).replace(/\D/g,"")]=1});
+  p.p.forEach(function(x){var d=String(x.t).replace(/\D/g,"");if(!have[d]){q.p.push(x);have[d]=1}})});
+ return out}
 function loadRemote(){
- if(!GH.repo||saving||again||ed!==null||document.hidden)return;
- var hd={Accept:"application/vnd.github.raw+json"};if(etag)hd["If-None-Match"]=etag;
- fetch(ghUrl(),{headers:hd,cache:"no-store"}).then(function(r){
-  if(r.status===304){stt(true);return null}if(!r.ok){stt(false,r.status);return null}stt(true);
-  etag=r.headers.get("ETag")||"";return r.json()
- }).then(function(j){if(j&&j.data&&!saving&&!again&&ed===null&&JSON.stringify(j.data)!==JSON.stringify(data)){data=j.data;render()}}).catch(function(){stt(false,"offline")})}
-var saving=false,again=false;
+ if(!GH.repo||document.hidden||busy())return;
+ if(GH.token){
+  var hd=authH();if(etag)hd["If-None-Match"]=etag;
+  fetch(ghUrl(),{headers:hd,cache:"no-store"}).then(function(r){
+   if(r.status===304){stt("● متصل بـ GitHub — آخر فحص "+tm());return null}
+   if(!r.ok){fail(r.status);return null}
+   etag=r.headers.get("ETag")||"";return r.json()
+  }).then(function(j){if(!j||busy())return;var o=dec(j.content);if(o&&o.data){apply(o.data,j.sha);stt("● متصل بـ GitHub — آخر تحديث "+tm())}}).catch(function(){fail("offline")})
+ }else{
+  fetch("data.json?t="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok){fail(r.status);return null}return r.json()}).then(function(o){if(o&&o.data&&!busy()){apply(o.data);stt("● متصل — آخر تحديث "+tm())}}).catch(function(){fail("offline")})
+ }
+}
 async function flush(){
- saving=true;
+ saving=true;var tries=0;
  try{
   while(again){
    again=false;
-   var hd={Authorization:"Bearer "+GH.token,Accept:"application/vnd.github+json"};
-   var r=await fetch(ghUrl(),{headers:hd,cache:"no-store"});
-   var sha=r.ok?(await r.json()).sha:undefined;
-   var b64=btoa(unescape(encodeURIComponent(JSON.stringify({data:data},null,1))));
-   var pr=await fetch(ghUrl(),{method:"PUT",headers:hd,body:JSON.stringify({message:"update data",content:b64,sha:sha})});
-   if(!pr.ok)throw new Error(pr.status);
+   var pr=await fetch(ghUrl(),{method:"PUT",headers:authH(),body:JSON.stringify({message:"update data",content:enc({data:data}),sha:baseSha})});
+   if(pr.ok){var j=await pr.json();baseSha=j.content.sha;dirty=false;etag="";cacheSave();stt("● متصل — اتحفظ على GitHub "+tm());say("اتحفظ على GitHub ✓");continue}
+   if((pr.status===409||pr.status===422)&&tries<3){
+    tries++;
+    var gr=await fetch(ghUrl(),{headers:authH(),cache:"no-store"});
+    if(!gr.ok)throw new Error(gr.status);
+    var g=await gr.json();var ro=dec(g.content);
+    data=mergeData(ro.data||[],data);baseSha=g.sha;cacheSave();render();again=true;continue}
+   throw new Error(pr.status)
   }
-  etag="";say("اتحفظ على GitHub ✓");
- }catch(e){say("تعذر الحفظ على GitHub ("+e.message+")")}
+ }catch(e){
+  dirty=true;cacheSave();
+  var c=String(e.message);
+  say(c==="403"?"التوكن مش مدّي صلاحية الكتابة. تعديلاتك محفوظة على جهازك وهتترفع لما الصلاحية تتصلح":"تعذر الرفع على GitHub. تعديلاتك محفوظة على جهازك وهتترفع تلقائياً");
+  stt("⚠ فيه تعديلات لسه مارفعتش على GitHub (كود "+c+"). محفوظة على جهازك ومش هتضيع");
+ }
  saving=false;
 }
 function save(){try{location.hash=cur===null?"":"p-"+cur}catch(e){}persist()}
-function persist(){if(!GH.token||!GH.repo){say("ادخل التوكن من ⚙️ الأول");return}again=true;if(!saving)flush()}
+function persist(){if(!GH.token||!GH.repo||!baseSha){say("لازم تدخل التوكن وتستنى تحميل الداتا من GitHub الأول");return}dirty=true;cacheSave();again=true;if(!saving)flush()}
 function say(t){document.getElementById("msg").textContent=t;setTimeout(function(){document.getElementById("msg").textContent=""},2500)}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function waNum(t){var d=String(t).replace(/\D/g,"");if(/^01\d{9}$/.test(d))return"20"+d.slice(1);if(/^201\d{9}$/.test(d))return d;return""}
@@ -144,7 +175,7 @@ document.addEventListener("click",function(e){
  var lb=e.target.closest("label[data-impf]");if(lb){impTo=+lb.dataset.impf;return}
  var b=e.target.closest("button");if(!b)return;
  var d=b.dataset;
- if(b.id==="gsave"){var rp=document.getElementById("gr").value.trim(),tk=document.getElementById("gt").value.trim();if(!rp||!tk){say("اكتب الريبو والتوكن");return}GH.repo=rp;GH.token=tk;try{localStorage.setItem("gh-repo",rp);localStorage.setItem("gh-token",tk)}catch(er){}document.body.classList.remove("ro");document.getElementById("gt").value="";say("تم. أي تعديل هيتنشر على GitHub");render();return}
+ if(b.id==="gsave"){var rp=document.getElementById("gr").value.trim(),tk=document.getElementById("gt").value.trim();if(!rp||!tk){say("اكتب الريبو والتوكن");return}GH.repo=rp;GH.token=tk;try{localStorage.setItem("gh-repo",rp);localStorage.setItem("gh-token",tk)}catch(er){}etag="";document.getElementById("gt").value="";stt("جاري تحميل الداتا من GitHub...");say("تم. هيتفتح التعديل أول ما الداتا تتحمل");render();loadRemote();return}
  if(b.id==="gout"){GH.token="";try{localStorage.removeItem("gh-token")}catch(er){}document.body.classList.add("ro");say("تم الخروج");render();return}
  if(b.id==="pub"){persist();return}
  if(d.pst!==undefined){impTo=+d.pst;var out=[];document.getElementById("pt"+d.pst).value.split(/\r?\n/).forEach(function(ln){var m=/\+?\d[\d\s\-]{4,}\d/.exec(ln);if(!m)return;out.push({w:ln.replace(m[0],"").replace(/[:\-,،;|]+/g," ").trim(),t:m[0].trim()})});addC(out);return}
@@ -196,8 +227,12 @@ document.getElementById("vcf").addEventListener("change",function(e){var f=e.tar
 var hm=/^#p-(\d+)$/.exec(location.hash||"");if(hm&&data[hm[1]])cur=+hm[1];
 render();
 document.getElementById("gr").value=GH.repo;
-if(GH.token&&GH.repo)document.body.classList.remove("ro");
-if(!GH.repo)document.getElementById("st").textContent="الصفحة دي مش مربوطة بريبو GitHub";loadRemote();setInterval(loadRemote,10000);document.addEventListener("visibilitychange",function(){if(!document.hidden){etag="";loadRemote()}});
+unlock();
+if(!GH.repo)stt("الصفحة دي مش مربوطة بريبو GitHub");else if(GH.token&&!baseSha)stt("جاري تحميل الداتا من GitHub... التعديل هيتفتح بعدها");
+if(dirty&&GH.token&&baseSha){again=true;flush()}
+loadRemote();setInterval(loadRemote,15000);
+setInterval(function(){if(dirty&&!saving&&GH.token&&baseSha){again=true;flush()}},30000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden){etag="";loadRemote()}});
 
 </script>
 
