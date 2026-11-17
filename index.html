@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl" data-theme="light" style="color-scheme: light;"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>دليل الأماكن والتليفونات</title>
+<title>دليل مخازن الأدوية</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&amp;display=swap">
 <style>
 :root{--bg:#f3f1ec;--card:#fff;--ink:#1d2b2a;--mute:#6b7775;--line:#dcd9d1;--acc:#0f6b5c;--accink:#fff;--danger:#b3372f;
@@ -36,8 +36,9 @@ a.map{display:inline-block;margin:2px 0 8px;color:var(--acc);font-weight:600}
 <body class="ro">
 <main>
 <div id="bn" class="note" hidden="">بياناتك دلوقتي على جهازك بس. اضغط الزرار عشان تتحفظ جوه الرابط ويشوفها أي حد تبعتله اللينك.<br><button class="main" id="pub">حفظ البيانات في الرابط</button></div>
-<h1>دليل الأماكن والتليفونات</h1>
+<h1>دليل مخازن الأدوية</h1>
 <p id="st" class="st">جاري الاتصال...</p>
+<p id="onl" class="st" hidden></p>
 <input id="q" placeholder="ابحث باسم المكان أو الشخص أو الرقم" aria-label="بحث">
 <details class="form" id="addBox">
 <summary><b>＋ إضافة مكان جديد</b></summary>
@@ -231,6 +232,24 @@ unlock();
 if(!GH.repo)stt("الصفحة دي مش مربوطة بريبو GitHub");else if(GH.token&&!baseSha)stt("جاري تحميل الداتا من GitHub... التعديل هيتفتح بعدها");
 if(dirty&&GH.token&&baseSha){again=true;flush()}
 loadRemote();setInterval(loadRemote,15000);
+var FB="https://numphar-bc08f-default-rtdb.firebaseio.com",cid=ls("cid"),off=0;
+if(!cid){cid=Math.random().toString(36).slice(2,10);lset("cid",cid)}
+function ping(){if(document.hidden)return;
+ fetch(FB+"/online/"+cid+".json",{method:"PUT",body:JSON.stringify({t:{".sv":"timestamp"}})}).then(function(r){return r.json()}).then(function(o){if(o&&o.t)off=o.t-Date.now()}).catch(function(){})}
+function countOnline(){
+ var el=document.getElementById("onl");
+ if(!GH.token){el.hidden=true;return}
+ if(document.hidden)return;
+ fetch(FB+"/online.json").then(function(r){return r.json()}).then(function(o){
+  var n=0,now=Date.now()+off,old=[];o=o||{};
+  Object.keys(o).forEach(function(k){var t=(o[k]||{}).t||0;if(now-t<75000)n++;else if(now-t>600000)old.push(k)});
+  el.hidden=false;el.textContent="👥 أونلاين دلوقتي: "+n;
+  old.forEach(function(k){fetch(FB+"/online/"+k+".json",{method:"DELETE"}).catch(function(){})})
+ }).catch(function(){})}
+ping();setInterval(ping,30000);
+setTimeout(countOnline,1500);setInterval(countOnline,15000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden){ping();setTimeout(countOnline,1000)}});
+window.addEventListener("pagehide",function(){try{fetch(FB+"/online/"+cid+".json",{method:"DELETE",keepalive:true})}catch(e){}});
 setInterval(function(){if(dirty&&!saving&&GH.token&&baseSha){again=true;flush()}},30000);
 document.addEventListener("visibilitychange",function(){if(!document.hidden){etag="";loadRemote()}});
 
