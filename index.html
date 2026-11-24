@@ -61,6 +61,15 @@ select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8
 
 
 
+<details class="form" id="bk"><summary><b>💾 نسخة احتياطية واستعادة</b></summary>
+<div style="margin-top:8px">
+<button class="main" id="bkdl">تنزيل نسخة احتياطية</button>
+<label class="lb" for="bkfile">استعادة من ملف</label>
+<input type="file" id="bkfile" accept=".json,application/json" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none">
+<div id="bkmsg" class="addr" style="margin-top:8px"></div>
+<button id="bkundo" hidden>↩ تراجع عن آخر استعادة</button>
+</div>
+</details>
 <div class="tools">
 <button id="copy">نسخ الكل كنص</button>
 </div>
@@ -239,6 +248,12 @@ document.addEventListener("click",function(e){
   if(/BEGIN:VCARD/i.test(tx)){tx.split(/BEGIN:VCARD/i).slice(1).forEach(function(blk){var m=/^FN[^:\r\n]*:(.*)$/im.exec(blk);var nm=m?m[1].trim():"";var re=/^(?:item\d+\.)?TEL[^:\r\n]*:(.+)$/gim,t;while((t=re.exec(blk)))out.push({w:nm,t:t[1].trim()})})}
   else tx.split(/\r?\n/).forEach(function(ln){var m=/\+?\d[\d\s\-]{4,}\d/.exec(ln);if(m)out.push({t:m[0].trim(),w:ln.replace(m[0],"").replace(/[:,\-|]+/g," ").trim()})});
   addC(out);return}
+ if(d.rs!==undefined){
+  if(d.rs==="no"||!bkPend){bkPend=null;bkMsg("");return}
+  if(!(GH.token&&baseSha)){say("لازم تكون مسجل بالتوكن والداتا متحملة");return}
+  lset("gh-prerestore",JSON.stringify({ts:Date.now(),data:data}));
+  data=(d.rs==="merge")?mergeData(data,bkPend):bkPend;
+  bkPend=null;bkMsg("");cur=null;ed=null;view=null;save();render();bkUndoShow();say(d.rs==="merge"?"تم الدمج":"تمت الاستعادة، وفيه زرار تراجع")}
  if(d.gv!==undefined){view=d.gv===""?null:d.gv;cur=null;ed=null;cf=null;document.getElementById("pg").value=view||"";render();window.scrollTo(0,0);return}
  if(b.id==="addPlace"){
   var n=document.getElementById("pn").value.trim(),l=document.getElementById("pl").value.trim();
@@ -283,6 +298,32 @@ document.getElementById("q").addEventListener("input",render);
 var impTo=null;
 function addC(list){var pl=data[impTo];if(!pl)return;var n=0;list.forEach(function(c){var t=(c.t||"").trim();if(!t)return;var dg=t.replace(/\D/g,"");if(pl.p.some(function(x){return x.t.replace(/\D/g,"")===dg}))return;pl.p.push({t:t,w:(c.w||"").trim()||"بدون اسم",r:""});n++});if(n){save();render();say("تم استيراد "+n+" رقم")}else say("مفيش أرقام جديدة للاستيراد")}
 document.getElementById("vcf").addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var out=[];String(rd.result).split(/BEGIN:VCARD/i).slice(1).forEach(function(blk){var m=/^FN[^:\r\n]*:(.*)$/im.exec(blk);var nm=m?m[1].trim():"";var re=/^(?:item\d+\.)?TEL[^:\r\n]*:(.+)$/gim,t;while((t=re.exec(blk)))out.push({w:nm,t:t[1].trim()})});addC(out);e.target.value=""};rd.readAsText(f)});
+var bkPend=null;
+function bkUndoShow(){var u=document.getElementById("bkundo");if(u)u.hidden=!ls("gh-prerestore")}
+function bkMsg(h){document.getElementById("bkmsg").innerHTML=h}
+document.getElementById("bkdl").addEventListener("click",function(){
+ var blob=new Blob([JSON.stringify({exported:new Date().toISOString(),data:data},null,1)],{type:"application/json"});
+ var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="backup-"+new Date().toISOString().slice(0,10)+".json";
+ document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);say("اتنزلت النسخة الاحتياطية")});
+document.getElementById("bkfile").addEventListener("change",function(e){
+ var f=e.target.files[0];e.target.value="";if(!f)return;
+ var rd=new FileReader();
+ rd.onload=function(){
+  try{
+   var o=JSON.parse(rd.result),arr=Array.isArray(o)?o:o.data;if(!Array.isArray(arr))throw 0;
+   var clean=arr.filter(function(p){return p&&typeof p.n==="string"&&Array.isArray(p.p)}).map(function(p){
+    var q={n:p.n,l:String(p.l||""),p:p.p.map(function(x){return{t:String(x.t||""),w:String(x.w||""),r:String(x.r||"")}})};
+    if(p.a)q.a=String(p.a);return q});
+   if(!clean.length)throw 0;
+   bkPend=clean;
+   var np=clean.reduce(function(s,p){return s+p.p.length},0);
+   bkMsg('الملف فيه '+clean.length+' مكان و '+np+' رقم. الداتا الحالية: '+data.length+' مكان.<br><button class="main" data-rs="merge">دمج مع الحالي (آمن)</button> <button class="del" data-rs="replace">استبدال الحالي</button> <button data-rs="no">إلغاء</button>')
+  }catch(er){bkPend=null;bkMsg("الملف مش نسخة احتياطية صالحة")}
+ };
+ rd.readAsText(f)});
+document.getElementById("bkundo").addEventListener("click",function(){
+ try{var pr=JSON.parse(ls("gh-prerestore")||"null");if(!pr||!Array.isArray(pr.data))return;data=pr.data;cur=null;ed=null;save();render();say("رجعنا للداتا اللي قبل آخر استعادة")}catch(er){say("تعذر التراجع")}});
+bkUndoShow();
 document.getElementById("pg").innerHTML=govOpts("");
 var hm=/^#p-(\d+)$/.exec(location.hash||"");if(hm&&data[hm[1]])cur=+hm[1];
 render();
