@@ -199,7 +199,7 @@ function render(){
   var hit=!q||pl.n.toLowerCase().indexOf(q)>-1||pl.p.some(function(x){return(x.t+x.w+x.r).toLowerCase().indexOf(q)>-1});
   if(!hit)return;
   if(view!==null&&govOf(pl)!==view)return;
-  h+='<section class="place"><button class="ph" data-tg="'+i+'" aria-expanded="'+(cur===i)+'"><span>'+esc(pl.n)+(view===null?' <small class="gl">'+esc(govOf(pl))+'</small>':'')+'</span><span class="ar">'+(cur===i?'▴':'▾')+'</span></button>';
+  h+='<section class="place"><button class="ph" data-tg="'+i+'" aria-expanded="'+(cur===i)+'"><span>'+esc(pl.n)+(view===null?' <small class="gl">'+esc(govOf(pl))+'</small>':'')+(safeUrl(pl.l)?' <span class="pin" title="فيه لوكيشن">📍</span>':'')+'</span><span class="ar">'+(cur===i?'▴':'▾')+'</span></button>';
   if(cur!==i){h+='</section>';return}
   if(ed==="p"+i){
    h+='<input id="en" value="'+esc(pl.n)+'" placeholder="اسم المكان"><input id="el" dir="ltr" value="'+esc(pl.l||"")+'" placeholder="رابط اللوكيشن"><select id="eg">'+govOpts(ov[hk(pl.n)]||"")+'</select><button class="main" data-sp="'+i+'">حفظ</button> <button data-ca="1">إلغاء</button>';
